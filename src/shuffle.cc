@@ -3,6 +3,7 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "shuffle.h"
 
@@ -21,11 +22,8 @@ void ShuffleChain::Add(ShuffleItem item) {
 
 size_t ShuffleChain::Len() { return _items.size(); }
 size_t ShuffleChain::LenURIs() {
-    size_t sum = 0;
-    for (auto& group : _items) {
-        sum += group._uris.size();
-    }
-    return sum;
+    return std::accumulate(_items.begin(), _items.end(), 0,
+        [](size_t sum, const ShuffleItem& group){ return sum + group._uris.size(); });
 }
 
 /* ensure that our window is as full as it can possibly be. */
@@ -49,9 +47,8 @@ const std::vector<std::string>& ShuffleChain::Pick() {
 
 std::vector<std::vector<std::string>> ShuffleChain::Items() {
     std::vector<std::vector<std::string>> result;
-    for (auto group : _items) {
-        result.push_back(group._uris);
-    }
+    std::transform(_items.begin(), _items.end(), std::back_inserter(result),
+       [](auto group) { return group._uris; });
     return result;
 }
 
